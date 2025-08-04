@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI-Powered Crop Recommendation System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* General Body and HTML Styles */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('https://images.unsplash.com/photo-1597422970930-8b169d69a0b6');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-attachment: fixed;
+            background-color: #d1fae5; /* Light green fallback */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            cursor: none; /* Hide default cursor */
+        }
+
+        /* Glassmorphism Effect */
+        .glassmorphism {
+            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Custom Font Weights */
+        .thick-font {
+            font-weight: 600;
+        }
+        .extra-thick-font {
+            font-weight: 800;
+        }
+
+        /* Text Shadow */
+        .text-shadow-sm {
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        .text-glow {
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.6), 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+
+        /* Button Base Styles */
+        .btn-primary {
+            background: linear-gradient(to right, #10B981, #059669);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+        }
+        .btn-secondary {
+            transition: transform 0.2s ease, background-color 0.2s ease;
+        }
+        .btn-secondary:hover {
+            transform: scale(1.03);
+            background-color: #fcd34d;
+        }
+        .btn-info {
+            background-color: #d1fae5;
+            color: #047857;
+            font-weight: 600;
+            border-radius: 0.5rem;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .btn-info:hover {
+            background-color: #a7f3d0;
+            transform: translateY(-1px);
+        }
+
+        /* Nav Link Hover Effect */
+        .nav-link {
+            position: relative;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #34d399;
+            transition: width 0.3s ease-out;
+        }
+        .nav-link:hover::after {
+            width: 100%;
+        }
+
+        /* Specific Styles for AI Recommendation Form */
+        .ph-number-input::-webkit-outer-spin-button,
+        .ph-number-input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .ph-number-input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        /* Loader Animation */
+        .loader {
+            width: 40px;
+            height: 40px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #10B981;
+            border-right: 5px solid #FBBF24;
+            border-radius: 50%;
+            animation: spin 1.2s ease-in-out infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Fade-in Animation for elements */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn {
+            animation: fadeIn 0.7s ease-out forwards;
+        }
+
+        /* pH Canvas & Range Slider Styling */
+        #phCanvas {
+            border: 2px solid #e2e8f0;
+            border-radius: 1rem;
+            background-color: #f7fafc;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .ph-range-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+        .ph-range-input {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            outline: none;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        .ph-range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #10B981, #FBBF24);
+            border: 3px solid white;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+        .ph-range-input::-moz-range-thumb {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(to right, #10B981, #FBBF24);
+            border: 3px solid white;
+            box-shadow: 0 0 8px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+        .ph-range-input:hover::-webkit-slider-thumb,
+        .ph-range-input:hover::-moz-range-thumb {
+            transform: scale(1.2);
+        }
+        .ph-value-display {
+            min-width: 70px;
+            text-align: center;
+            padding: 0.5rem 0.75rem;
+            border: 2px solid #d1fae5;
+            border-radius: 0.75rem;
+            background-color: #ecfdf5;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #065f46;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Modal Specific Styles */
+        .modal-close:hover {
+            transform: rotate(90deg);
+        }
+
+        /* Section-Specific Background Colors */
+        #home {
+            background: linear-gradient(135deg, #EDC9AF, #1B263B); /* Desert sand to dark blue */
+            color: black;
+        }
+
+        #about {
+            background: linear-gradient(135deg, #F5F6F5, #A20021); /* Snow to madder */
+            color: #333;
+        }
+
+        #contact {
+            background: linear-gradient(135deg, #BFD7EA, #87CEEB); /* Bora to skyline */
+            color: #333;
+        }
+
+        #ai-recommendation-section {
+            background: linear-gradient(135deg, #FFFFE0, #50C878); /* Light yellow to emerald */
+            color: #333;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        /* Smooth Smoky Cursor Effect */
+        .smoky-cursor {
+            pointer-events: none;
+            position: fixed;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 20%, rgba(0, 255, 255, 0.3) 70%, transparent 100%);
+            filter: blur(5px);
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            animation: smokyFade 1.5s ease-out forwards;
+        }
+
+        @keyframes smokyFade {
+            0% {
+                opacity: 0.8;
+                transform: translate(-50%, -50%) scale(0.5);
+                filter: blur(5px);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translate(-50%, -50%) scale(1.2);
+                filter: blur(8px);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1.5);
+                filter: blur(10px);
+            }
+        }
+
+        /* Main cursor dot for continuous visibility */
+        .cursor-dot {
+            pointer-events: none;
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00CED1; /* Cyan for visibility */
+            transform: translate(-50%, -50%);
+            z-index: 10000;
+            transition: transform 0.1s ease;
+        }
+    </style>
+</head>
+<body class="text-gray-800 min-h-screen flex flex-col items-center justify-center">
+
+    <nav class="fixed top-0 left-0 right-0 bg-emerald-700 bg-opacity-80 glassmorphism text-black p-4 z-50 shadow-lg">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-extrabold text-glow">AI Farming : Cultivating Intelligence </h1>
+            <ul class="flex space-x-6">
+                <li><a href="#home" class="nav-link text-black hover:text-emerald-200 transition duration-200">Home</a></li>
+                <li><a href="#about" class="nav-link text-black hover:text-emerald-200 transition duration-200">About</a></li>
+                <li><a href="#contact" class="nav-link text-black hover:text-emerald-200 transition duration-200">Contact Us</a></li>
+                <li><a href="#ai-recommendation-section" class="nav-link text-black hover:text-emerald-200 transition duration-200">AI Recommendation</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <section id="home" class="w-full pt-24 pb-16 min-h-screen flex items-center justify-center text-center px-4">
+        <div class="glassmorphism p-10 rounded-2xl shadow-xl shadow-emerald-200/50 animate-fadeIn max-w-4xl mx-auto">
+            <h2 class="text-6xl font-extrabold text-emerald-800 mb-6 leading-tight text-shadow-sm">
+                Revolutionizing <span class="text-yellow-600">Agriculture</span> with AI
+            </h2>
+            <p class="text-xl text-gray-700 mb-8 max-w-2xl mx-auto leading-relaxed">
+                Empowering farmers with intelligent crop recommendations, sustainable practices, and market insights for a greener, more prosperous future.
+            </p>
+            <div class="space-x-4">
+                <a href="#ai-recommendation-section" class="btn-primary inline-block rounded-xl px-8 py-4 text-lg font-bold text-white shadow-lg transition-all duration-300">
+                    Get Crop Recommendations
+                </a>
+                <a href="#about" class="btn-secondary inline-block rounded-xl bg-amber-100 text-amber-800 px-6 py-3 text-lg font-semibold shadow-sm hover:text-amber-900 transition-all duration-200">
+                    Learn More
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <section id="about" class="w-full py-16 shadow-inner z-10">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-5xl font-extrabold mb-8 text-shadow-sm">About AI Farming</h2>
+            <p class="text-lg leading-relaxed max-w-3xl mx-auto mb-8">
+                At AI Farming, we believe in a future where technology empowers every farmer. Our platform leverages advanced Artificial Intelligence to analyze soil data, climate patterns, and market trends to provide precise, actionable recommendations.
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white text-gray-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <h3 class="text-2xl font-bold mb-4 text-emerald-700">Smart Crop Choices</h3>
+                    <p class="text-base">Get tailored recommendations for optimal crop selection based on your specific farm conditions and region.</p>
+                </div>
+                <div class="bg-white text-gray-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <h3 class="text-2xl font-bold mb-4 text-emerald-700">Enhanced Productivity</h3>
+                    <p class="text-base">Maximize your yield and minimize waste with data-driven insights on fertilizers, irrigation, and pest management.</p>
+                </div>
+                <div class="bg-white text-gray-800 p-8 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    <h3 class="text-2xl font-bold mb-4 text-emerald-700">Sustainable Future</h3>
+                    <p class="text-base">Promote eco-friendly farming practices that enrich your soil and contribute to a healthier planet.</p>
+                </div>
+            </div>
+            <h3 class="text-4xl font-extrabold mt-16 mb-8 text-shadow-sm">Top 5 Demanded Crops in India</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 max-w-5xl mx-auto">
+                <div class="crop-card bg-emerald-100 p-4 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300">
+                    <img src="rice.jpg" alt="Rice" class="w-full h-32 object-cover rounded-md mb-3 shadow-sm">
+                    <p class="text-lg font-bold text-emerald-800">Rice</p>
+                </div>
+                <div class="crop-card bg-emerald-100 p-4 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300">
+                    <img src="wheat.png" alt="Wheat" class="w-full h-32 object-cover rounded-md mb-3 shadow-sm">
+                    <p class="text-lg font-bold text-emerald-800">Wheat</p>
+                </div>
+                <div class="crop-card bg-emerald-100 p-4 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300">
+                    <img src="pulses.jpeg" alt="Pulses" class="w-full h-32 object-cover rounded-md mb-3 shadow-sm">
+                    <p class="text-lg font-bold text-emerald-800">Pulses</p>
+                </div>
+                <div class="crop-card bg-emerald-100 p-4 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300">
+                    <img src="sugarcane.jpeg" alt="Sugarcane" class="w-full h-32 object-cover rounded-md mb-3 shadow-sm">
+                    <p class="text-lg font-bold text-emerald-800">Sugarcane</p>
+                </div>
+                <div class="crop-card bg-emerald-100 p-4 rounded-xl shadow-md transform hover:scale-105 transition-transform duration-300">
+                    <img src="cotton.jpeg" alt="Cotton" class="w-full h-32 object-cover rounded-md mb-3 shadow-sm">
+                    <p class="text-lg font-bold text-emerald-800">Cotton</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="w-full py-16 shadow-inner z-10">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-5xl font-extrabold mb-8 text-shadow-sm">Get in Touch</h2>
+            <p class="text-lg leading-relaxed max-w-2xl mx-auto mb-10">
+                Have questions or need support? Our team is here to help you cultivate success. Reach out to us through the form below or connect via social media.
+            </p>
+            <div class="max-w-xl mx-auto glassmorphism p-8 rounded-xl shadow-lg text-gray-800">
+                <form id="contactForm" action="https://formspree.io/f/myzjezyd" method="POST" class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-left text-sm font-semibold text-gray-700 mb-2">Your Name</label>
+                        <input type="text" id="name" name="name" class="block w-full rounded-xl border-gray-200 bg-emerald-50 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200" placeholder="John Doe" required>
+                    </div>
+                    <div>
+                        <label for="email" class="block text-left text-sm font-semibold text-gray-700 mb-2">Your Email</label>
+                        <input type="email" id="email" name="_replyto" class="block w-full rounded-xl border-gray-200 bg-emerald-50 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200" placeholder="john.doe@example.com" required>
+                    </div>
+                    <div>
+                        <label for="message" class="block text-left text-sm font-semibold text-gray-700 mb-2">Your Message</label>
+                        <textarea id="message" name="message" rows="5" class="block w-full rounded-xl border-gray-200 bg-emerald-50 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200" placeholder="Tell us how we can help..." required></textarea>
+                    </div>
+                    <!-- Hidden honeypot field for spam protection -->
+                    <input type="text" name="_gotcha" style="display:none">
+                    <!-- Custom subject for emails -->
+                    <input type="hidden" name="_subject" value="New Contact Form Submission - AI Farming">
+                    <button type="submit" class="btn-primary w-full rounded-xl px-8 py-4 text-lg font-bold text-white shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-300 focus:ring-opacity-50 transition-all duration-300">
+                        Send Message
+                    </button>
+                </form>
+            </div>
+            <div class="mt-10 text-center">
+                <p class="text-xl font-semibold mb-4">Connect With Us:</p>
+                <div class="flex justify-center space-x-6">
+                    <a href="https://www.linkedin.com/in/support-ai-crop-recommendation-agro-209510370" target="_blank" rel="noopener noreferrer" class="text-gray-800 hover:text-emerald-700 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+                    </a>
+                    <a href="https://x.com/HeroBoy252922" target="_blank" rel="noopener noreferrer" class="text-gray-800 hover:text-emerald-700 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M22 6.981c-.551.246-1.139.41-1.754.482.637-.384 1.127-.988 1.359-1.706-.597.353-1.258.608-1.96.748-.564-.602-1.366-.979-2.259-.979-1.707 0-3.091 1.465-3.091 3.268 0 .256.028.503.076.74-.257-.014-.515-.042-.772-.084-2.81-.439-5.297-1.554-6.964-3.693-.291.503-.458 1.089-.458 1.716 0 1.136.577 2.137 1.455 2.723-.538-.023-1.047-.168-1.492-.41-.001.013-.001.026-.001.039 0 1.588 1.144 2.91 2.659 3.213-.277.075-.572.115-.874.115-.213 0-.419-.019-.623-.058.423 1.353 1.65 2.34 3.1 2.366-1.139.914-2.576 1.456-4.135 1.456-.269 0-.533-.016-.793-.046 1.472.96 3.22 1.524 5.093 1.524 6.111 0 9.447-5.234 9.447-9.799 0-.15-.003-.301-.009-.45.649-.49 1.213-1.101 1.659-1.795z"/></svg>
+                    </a>
+                    <a href="https://www.instagram.com/ai_powered_crop_system" target="_blank" rel="noopener noreferrer" class="text-gray-800 hover:text-emerald-700 transition-colors duration-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.77 1.636 4.908 4.908.058 1.267.069 1.647.069 4.854 0 3.204-.012 3.584-.07 4.85-.148 3.252-1.636 4.77-4.908 4.908-1.267.058-1.647.069-4.854.069-3.204 0-3.584-.012-4.85-.07-3.252-.148-4.77-1.636-4.908-4.908-.058-1.267-.069-1.647-.069-4.854 0-3.204.012-3.584.07-4.85.148-3.252 1.636-4.77 4.908-4.908 1.267-.058 1.647-.069 4.854-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.354.195-6.241 2.102-6.436 6.436-.058 1.28-.072 1.688-.072 4.948 0 3.259.014 3.668.072 4.948.196 4.333 2.083 6.241 6.436 6.436 1.28.058 1.688.072 4.947.072 3.259 0 3.668-.014 4.948-.072 4.333-.195 6.241-2.083 6.436-6.436.058-1.28.072-1.688.072-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.083-6.241-6.436-6.436-1.28-.058-1.688-.072-4.948-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.791-4-4s1.791-4 4-4 4 1.791 4 4-1.791 4-4 4zm6.406-11.845c-.796 0-1.444.647-1.444 1.444s.647 1.444 1.444 1.444 1.444-.647 1.444-1.444-.647-1.444-1.444-1.444z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div id="ai-recommendation-section" class="container mx-auto max-w-3xl w-full glassmorphism p-8 sm:p-10 rounded-2xl shadow-xl shadow-emerald-200/50 animate-fadeIn mt-10 mb-10">
+        <header class="mb-8 text-center">
+            <h1 class="text-5xl font-extrabold text-emerald-700 text-shadow-sm">AI-Powered Crop Recommendation</h1>
+        </header>
+        <section id="introduction" class="mb-10">
+            <p class="text-gray-600 text-center text-lg leading-relaxed">
+                Discover the best crops for your farm with AI-driven insights. Enter your soil conditions below for tailored recommendations, fertilizers, and yields.
+            </p>
+        </section>
+        <section id="inputSection" class="mb-10">
+            <h2 class="text-2xl font-bold text-gray-800 mb-2 text-shadow-sm">Your Farm Conditions</h2>
+            <p class="text-sm text-gray-500 mb-6">Provide accurate details for the most relevant AI suggestions.</p>
+            <form id="recommendationForm" class="space-y-8">
+                <div>
+                    <label for="soilType" class="block text-sm font-semibold text-gray-700 mb-2">Soil Type</label>
+                    <select id="soilType" name="soilType" class="block w-full rounded-xl border-gray-200 bg-emerald-50 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200">
+                        <option value="">Select Soil Type</option>
+                        <option value="Red Soil">Red Soil</option>
+                        <option value="Black Soil">Black Soil</option>
+                        <option value="Alluvial Soil">Alluvial Soil</option>
+                        <option value="Laterite Soil">Laterite Soil</option>
+                        <option value="Desert Soil">Desert Soil</option>
+                        <option value="Sandy Soil">Sandy Soil</option>
+                        <option value="Loamy Soil">Loamy Soil</option>
+                        <option value="Clayey Soil">Clayey Soil</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="season" class="block text-sm font-semibold text-gray-700 mb-2">Season</label>
+                    <select id="season" name="season" class="block w-full rounded-xl border-gray-200 bg-emerald-50 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200">
+                        <option value="">Select Season</option>
+                        <option value="Summer">Summer (Kharif/Zaid)</option>
+                        <option value="Rainy">Rainy (Kharif)</option>
+                        <option value="Winter">Winter (Rabi)</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="phLevelRange" class="block text-sm font-semibold text-gray-700 mb-2">Soil pH Level (1-14)</label>
+                    <div class="ph-range-container">
+                        <input type="number" id="phLevelNumber" name="phLevelNumber" min="1" max="14" step="0.1"
+                               class="ph-number-input hidden" value="7.0">
+                        <input type="range" id="phLevelRange" name="phLevelRange" min="1" max="14" step="0.1" value="7.0"
+                               class="ph-range-input">
+                        <span id="phValueDisplay" class="ph-value-display">7.0</span>
+                    </div>
+                    <canvas id="phCanvas" width="500" height="40" class="mt-3"></canvas>
+                </div>
+                <div>
+                    <label for="previousCrop" class="block text-sm font-semibold text-gray-700 mb-2">Previous Crop Grown (if any)</label>
+                    <input type="text" id="previousCrop" name="previousCrop" class="block w-full rounded-xl border-gray-200 bg-emerald-50 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200" placeholder="e.g., Wheat, Rice, Fallow">
+                </div>
+                <div id="clarifyingQuestionDiv" class="hidden bg-amber-50 p-6 rounded-xl border border-amber-200 shadow-sm">
+                    <label for="clarifyingInfo" class="block text-sm font-semibold text-amber-800 mb-2">
+                        Refine AI Recommendations (e.g., "Good drainage", "Full sunlight"):
+                    </label>
+                    <input type="text" id="clarifyingInfo" name="clarifyingInfo" class="block w-full rounded-xl border-amber-200 bg-amber-100 shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-300 focus:ring-opacity-50 py-3 px-4 text-sm transition-all duration-200 transform focus:scale-105" placeholder="e.g., Land has good drainage, Full sunlight">
+                </div>
+                <div>
+                    <button type="submit" class="w-full btn-primary rounded-xl px-8 py-4 text-lg font-bold text-white shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-300 focus:ring-opacity-50 transition-all duration-300">
+                        Get Recommendations
+                    </button>
+                </div>
+            </form>
+        </section>
+        <section id="recommendationOutput">
+            <h2 id="recommendationTitle" class="text-2xl font-bold text-gray-800 mb-6 sr-only text-shadow-sm">Recommendations</h2>
+            <div id="loader" class="hidden loader"></div>
+            <div id="resultsContainer" class="space-y-6"></div>
+            <div id="noRecommendationActions" class="hidden text-center mt-8">
+                <p class="text-gray-600 mb-4 text-lg">
+                    No recommendations found? Add more details for better AI insights.
+                </p>
+                <p class="text-gray-600 mb-4 text-sm font-semibold">
+                    💡 Suggestions: "Is drainage good?", "How much sunlight?", "Water source?", "Soil challenges?"
+                </p>
+                <button id="askClarifyingQuestionButton" class="btn-secondary inline-flex items-center rounded-xl bg-amber-100 text-amber-800 px-6 py-3 text-sm font-semibold shadow-sm hover:text-amber-900 focus:outline-none focus:ring-2 focus:ring-amber-300 transition-all duration-200">
+                    Provide More Details
+                </button>
+            </div>
+        </section>
+    </div>
+
+    <footer class="w-full bg-gray-900 text-white p-4 text-center mt-auto">
+        <p class="text-sm">© 2025 AI Farming. All rights reserved.</p>
+    </footer>
+
+    <div id="aiContentModal" class="fixed inset-0 bg-neutral-900 bg-opacity-80 flex items-center justify-center p-4 z-50 hidden">
+        <div class="glassmorphism p-8 rounded-2xl shadow-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto border border-emerald-300/30 animate-fadeIn relative">
+            <button class="absolute top-4 right-4 text-gray-500 hover:text-gray-800 modal-close transition-transform duration-200" onclick="closeModal()">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <h3 id="modalTitle" class="text-2xl font-bold text-emerald-700 mb-4 text-shadow-sm"></h3>
+            <div id="modalContent" class="text-gray-700 text-sm leading-relaxed">
+                <div id="modalLoader" class="hidden loader"></div>
+                <p id="modalText"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        const form = document.getElementById('recommendationForm');
+        const resultsContainer = document.getElementById('resultsContainer');
+        const recommendationTitle = document.getElementById('recommendationTitle');
+        const loader = document.getElementById('loader');
+        const noRecommendationActions = document.getElementById('noRecommendationActions');
+        const askClarifyingQuestionButton = document.getElementById('askClarifyingQuestionButton');
+        const clarifyingQuestionDiv = document.getElementById('clarifyingQuestionDiv');
+        const clarifyingInfoInput = document.getElementById('clarifyingInfo');
+        const phLevelNumberInput = document.getElementById('phLevelNumber');
+        const phLevelRangeInput = document.getElementById('phLevelRange');
+        const phValueDisplay = document.getElementById('phValueDisplay');
+        const phCanvas = document.getElementById('phCanvas');
+        const phCtx = phCanvas.getContext('2d');
+        const aiContentModal = document.getElementById('aiContentModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalContent = document.getElementById('modalContent');
+        const modalText = document.getElementById('modalText');
+        const modalLoader = document.getElementById('modalLoader');
+        const mainContainer = document.getElementById('ai-recommendation-section');
+
+        let currentSoilType = '';
+        let currentSeason = '';
+        let currentPhLevel = '';
+        let currentPreviousCrop = '';
+        let currentClarifyingInfo = '';
+
+        // Trigger fade-in on load
+        window.addEventListener('load', () => {
+            mainContainer.classList.add('animate-fadeIn');
+        });
+
+        // Modal Functions
+        function showModal(title, content) {
+            modalTitle.textContent = title;
+            modalText.innerHTML = content;
+            aiContentModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            aiContentModal.classList.add('hidden');
+            modalText.innerHTML = '';
+            modalLoader.classList.add('hidden');
+        }
+
+        // pH Visualizer Functions
+        function drawPhVisualizer(phValue) {
+            const width = phCanvas.width;
+            const height = phCanvas.height;
+            phCtx.clearRect(0, 0, width, height);
+
+            const gradient = phCtx.createLinearGradient(0, 0, width, 0);
+            gradient.addColorStop(0, '#10B981'); /* Green (Acidic) */
+            gradient.addColorStop(0.5, '#FBBF24'); /* Yellow (Neutral) */
+            gradient.addColorStop(0.75, '#8B5CF6'); /* Purple */
+            gradient.addColorStop(1, '#6B21A8'); /* Dark Purple (Alkaline) */
+            phCtx.fillStyle = gradient;
+            phCtx.fillRect(0, 0, width, height);
+
+            if (!isNaN(phValue) && phValue >= 1 && phValue <= 14) {
+                const clampedPhValue = Math.max(1, Math.min(14, phValue));
+                const x = (clampedPhValue - 1) / 13 * width; // Calculate X position based on value
+
+                phCtx.beginPath();
+                phCtx.moveTo(x, 0);
+                phCtx.lineTo(x - 6, height); // Base left point
+                phCtx.lineTo(x + 6, height); // Base right point
+                phCtx.closePath();
+                phCtx.fillStyle = '#1F2937'; // Dark gray pointer
+                phCtx.shadowColor = '#10B981'; // Green glow for pointer
+                phCtx.shadowBlur = 10;
+                phCtx.fill();
+                phCtx.shadowBlur = 0; // Reset shadow
+            }
+
+            // Labels for pH scale
+            phCtx.fillStyle = 'white';
+            phCtx.font = 'bold 12px Inter';
+            phCtx.textAlign = 'left';
+            phCtx.fillText('Acidic', 8, height / 2 + 4);
+            phCtx.textAlign = 'right';
+            phCtx.fillText('Alkaline', width - 8, height / 2 + 4);
+        }
+
+        // Event listeners for pH inputs
+        phLevelRangeInput.addEventListener('input', () => {
+            const ph = parseFloat(phLevelRangeInput.value);
+            phLevelNumberInput.value = ph.toFixed(1);
+            phValueDisplay.textContent = ph.toFixed(1);
+            drawPhVisualizer(ph);
+        });
+
+        phLevelNumberInput.addEventListener('input', () => {
+            let ph = parseFloat(phLevelNumberInput.value);
+            if (isNaN(ph) || ph < 1) ph = 1;
+            if (ph > 14) ph = 14;
+            phLevelNumberInput.value = ph.toFixed(1);
+            phLevelRangeInput.value = ph.toFixed(1);
+            phValueDisplay.textContent = ph.toFixed(1);
+            drawPhVisualizer(ph);
+        });
+
+        // Initial draw of pH visualizer
+        drawPhVisualizer(parseFloat(phLevelRangeInput.value));
+        phValueDisplay.textContent = parseFloat(phLevelRangeInput.value).toFixed(1);
+
+        // Function to call Gemini for general text responses (e.g., detailed info)
+        async function callGeminiForText(prompt, title, responseSchema = null, initialContext = null) {
+            modalLoader.classList.remove('hidden');
+            modalText.innerHTML = ''; // Clear previous content
+            showModal(title, ''); // Show modal with title, empty content
+
+            let chatHistory = [];
+            if (initialContext) {
+                chatHistory.push({ role: "user", parts: [{ text: initialContext }] });
+            }
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+
+            const payload = {
+                contents: chatHistory,
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                ],
+                generationConfig: {
+                    temperature: 0.7, // Adjust creativity
+                    topP: 0.95,
+                    topK: 40,
+                }
+            };
+
+            if (responseSchema) {
+                payload.generationConfig.responseMimeType = "application/json";
+                payload.generationConfig.responseSchema = responseSchema;
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+                }
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+
+                    const aiResponseText = result.candidates[0].content.parts[0].text;
+
+                    if (responseSchema) {
+                        try {
+                            const parsedContent = JSON.parse(aiResponseText);
+                            if (Array.isArray(parsedContent)) {
+                                let listHtml = '<ul class="list-disc pl-6 space-y-2 text-gray-700">';
+                                parsedContent.forEach(item => {
+                                    listHtml += `<li>${item}</li>`;
+                                });
+                                listHtml += '</ul>';
+                                modalText.innerHTML = listHtml;
+                            } else {
+                                modalText.innerHTML = `<p class="text-red-600">AI returned unexpected format. Expected an array.</p>`;
+                            }
+                        } catch (parseError) {
+                            console.error("Error parsing AI response for schema:", parseError, aiResponseText);
+                            modalText.innerHTML = `<p class="text-red-600">Error parsing AI response. Please try again. (Details: ${parseError.message})</p>`;
+                        }
+                    } else {
+                        modalText.innerHTML = `<p>${aiResponseText.replace(/\n/g, '<br>')}</p>`;
+                    }
+                } else {
+                    modalText.innerHTML = `<p class="text-red-600">Failed to get information from AI. Please try again. No valid candidate found.</p>`;
+                    console.warn("Gemini response was empty or malformed:", result);
+                }
+            } catch (error) {
+                modalText.innerHTML = `<p class="text-red-600">An error occurred: ${error.message}. Please check your network and try again.</p>`;
+                console.error("Gemini API call error:", error);
+            } finally {
+                modalLoader.classList.add('hidden');
+            }
+        }
+
+        // Function to call Gemini specifically for guidance (using separate key if needed, or same)
+        async function callGeminiForGuidance(prompt, responseSchema = null) {
+            const payload = {
+                contents: [{ role: "user", parts: [{ text: prompt }] }],
+                safetySettings: [
+                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                ],
+                generationConfig: {
+                    temperature: 0.7,
+                    topP: 0.95,
+                    topK: 40,
+                }
+            };
+            if (responseSchema) {
+                payload.generationConfig.responseMimeType = "application/json";
+                payload.generationConfig.responseSchema = responseSchema;
+            }
+
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiGuidanceApiKey}`; // Using guidance key here
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    const aiResponseText = result.candidates[0].content.parts[0].text;
+
+                    if (responseSchema) {
+                        try {
+                            const parsedContent = JSON.parse(aiResponseText);
+                            if (Array.isArray(parsedContent)) {
+                                return parsedContent; // Return the parsed array
+                            }
+                            return null; // Return null if not an array as expected
+                        } catch (parseError) {
+                            console.error("Error parsing guidance response:", parseError, aiResponseText);
+                            return null;
+                        }
+                    }
+                    return aiResponseText; // Return raw text if no schema
+                }
+                return null; // No valid response
+            } catch (error) {
+                console.error("Gemini Guidance API error:", error);
+                return null;
+            }
+        }
+
+        // Functions for detailed crop info in modal
+        async function getFertilizerGuide(cropName, soilType) {
+            const prompt = `Provide a concise fertilizer application guide for ${cropName} crop on ${soilType}. Return a JSON array where each element is a concise bullet point about types of fertilizers, timing, or methods of application.`;
+            const schema = {
+                type: "ARRAY",
+                items: { type: "STRING" }
+            };
+            await callGeminiForText(prompt, `Fertilizer Guide for ${cropName}`, schema);
+        }
+
+        async function getPestDiseaseInfo(cropName) {
+            const prompt = `List common pests and diseases for ${cropName} crop and suggest general prevention strategies. Return a JSON array where each element is a concise bullet point.`;
+            const schema = {
+                type: "ARRAY",
+                items: { type: "STRING" }
+            };
+            await callGeminiForText(prompt, `Pest & Disease Info for ${cropName}`, schema);
+        }
+
+        async function getSustainablePractices(cropName) {
+            const prompt = `Suggest sustainable farming practices for cultivating ${cropName}. Return a JSON array where each element is a concise bullet point about water management, soil health, or biodiversity.`;
+            const schema = {
+                type: "ARRAY",
+                items: { type: "STRING" }
+            };
+            await callGeminiForText(prompt, `Sustainable Practices for ${cropName}`, schema);
+        }
+
+        // Function to fetch soil adjustment guidance
+        async function fetchGuidanceFromGemini(soilType, season, phLevel, previousCrop, isAcidic) {
+            loader.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+            const action = isAcidic ? "raise soil pH" : "lower soil pH";
+            const title = isAcidic ? "Acidic Soil Adjustment Guidance" : "Alkaline Soil Adjustment Guidance";
+            recommendationTitle.textContent = title;
+            recommendationTitle.classList.remove('sr-only');
+
+            const prompt = `Provide 10 concise bullet points to ${action} for ${soilType}, ${season} season, pH ${phLevel}, previous crop ${previousCrop || 'None'}, relevant for Indian agriculture. Return as a JSON array where each element is a string. Ensure recommendations are practical and tailored to the given conditions.`;
+            const schema = {
+                type: "ARRAY",
+                items: { type: "STRING" }
+            };
+
+            const staticAcidicGuidance = [
+                "Test soil pH accurately using a reliable soil testing kit or lab analysis to confirm the current pH level.",
+                "Apply agricultural lime (calcium carbonate) at 2-4 tons per acre for sandy soils or 4-6 tons per acre for clay soils to raise pH.",
+                "Use wood ash as an alternative (0.5-1 ton per acre), but apply cautiously due to variable potency and potential nutrient imbalances.",
+                "Spread lime or ash evenly over the soil surface, preferably in the fall or early spring, to allow time for reaction.",
+                "Incorporate the amendment into the top 6-8 inches of soil using tillage for better mixing and effectiveness.",
+                "Avoid over-application; consult local agricultural extension services for precise amounts based on soil type and current pH.",
+                "Water the soil lightly after application to help the amendment react, but avoid excessive irrigation to prevent leaching.",
+                "Retest soil pH after 6-8 weeks to monitor changes, as lime takes time to neutralize acidity.",
+                "Consider adding organic matter like compost to improve soil structure and buffer pH changes over time.",
+                "Plan crop selection after pH adjustment, as most Indian crops (e.g., rice, wheat) prefer a pH of 5.5-7.5."
+            ];
+            const staticAlkalineGuidance = [
+                "Confirm soil pH with a professional soil test to determine the extent of alkalinity and guide amendment choices.",
+                "Apply elemental sulfur at 0.2-1 ton per acre, depending on soil type, to lower pH effectively over time.",
+                "Use organic matter like compost or well-rotted manure (5-10 tons per acre) to gradually reduce soil alkalinity.",
+                "Apply amendments in the fall or early spring, allowing 6-8 weeks for pH adjustment before planting.",
+                "Mix sulfur or organic matter into the top 6-8 inches of soil to ensure even distribution and reaction.",
+                "Consult local agricultural services for precise sulfur application rates, as excess can harm soil health.",
+                "Irrigate lightly after application to activate sulfur, but avoid waterlogging to maintain soil structure.",
+                "Retest soil pH after 6-8 weeks to assess progress, as pH reduction can be slow in alkaline soils.",
+                "Incorporate acidifying crops like legumes or green manures to support long-term pH balance.",
+                "Select crops suited to slightly alkaline soils (e.g., barley, cotton) if pH adjustment is incomplete before planting."
+            ];
+
+            const guidance = await callGeminiForGuidance(prompt, schema);
+
+            if (guidance && Array.isArray(guidance) && guidance.length > 0) {
+                let listHtml = '<ul class="list-disc pl-8 space-y-3 text-gray-600 text-lg">';
+                guidance.forEach(item => {
+                    listHtml += `<li class="animate-fadeIn">${item}</li>`; // Add fade-in for list items
+                });
+                listHtml += '</ul>';
+                resultsContainer.innerHTML = listHtml;
+            } else {
+                const fallbackGuidance = isAcidic ? staticAcidicGuidance : staticAlkalineGuidance;
+                let listHtml = '<ul class="list-disc pl-8 space-y-3 text-gray-600 text-lg">';
+                fallbackGuidance.forEach(item => {
+                    listHtml += `<li class="animate-fadeIn">${item}</li>`;
+                });
+                listHtml += '</ul>';
+                resultsContainer.innerHTML = `<p class="text-yellow-600 text-center mb-4 text-lg font-semibold">Unable to fetch AI guidance. Displaying default recommendations.</p>${listHtml}`;
+            }
+            loader.classList.add('hidden');
+        }
+
+        // Main function to get crop recommendations
+        async function getRecommendations(clarifyingPrompt = '') {
+            loader.classList.remove('hidden');
+            resultsContainer.innerHTML = '';
+            recommendationTitle.classList.add('sr-only');
+            noRecommendationActions.classList.add('hidden');
+            clarifyingQuestionDiv.classList.add('hidden'); // Hide clarifying input
+            clarifyingInfoInput.value = ''; // Clear its value
+
+            const soilType = document.getElementById('soilType').value;
+            const phLevel = parseFloat(phLevelRangeInput.value);
+            const season = document.getElementById('season').value;
+            const previousCrop = document.getElementById('previousCrop').value.trim();
+
+            // Store current input for potential refining
+            currentSoilType = soilType;
+            currentSeason = season;
+            currentPhLevel = phLevel;
+            currentPreviousCrop = previousCrop;
+            currentClarifyingInfo = clarifyingPrompt;
+
+            if (!soilType || !season || isNaN(phLevel) || phLevel < 1 || phLevel > 14) {
+                resultsContainer.innerHTML = `<p class="text-red-600 text-center font-semibold text-lg mt-4">Please fill in all fields correctly (pH between 1-14).</p>`;
+                loader.classList.add('hidden');
+                return;
+            }
+
+            // If pH is outside optimal range (5-8), suggest soil adjustment instead of crops
+            if (phLevel < 5 || phLevel > 8) {
+                const isAcidic = phLevel < 5;
+                let title = isAcidic ? "Acidic Soil Adjustment Guidance" : "Alkaline Soil Adjustment Advice";
+                let warning = isAcidic
+                    ? `<p class="text-red-600 font-extrabold text-center mt-4 mb-4 text-lg">Soil pH is too low (acidic) for most crops! Adjusting pH is crucial.</p>`
+                    : `<p class="text-red-600 font-extrabold text-center mt-4 mb-4 text-lg">Soil pH is too high (alkaline) for most crops! Adjusting pH is crucial.</p>`;
+                let buttonText = isAcidic ? "Get Guidance to Raise Soil pH" : "Get Guidance to Lower Soil pH";
+
+                recommendationTitle.textContent = title;
+                recommendationTitle.classList.remove('sr-only');
+
+                resultsContainer.innerHTML = `
+                    ${warning}
+                    <div class="text-center">
+                        <button id="guidanceButton" class="btn-primary inline-flex items-center justify-center rounded-xl px-8 py-4 text-lg font-bold text-white shadow-lg focus:outline-none focus:ring-4 focus:ring-emerald-300 focus:ring-opacity-50 transition-all duration-300 hover:ring-2 hover:ring-emerald-400/50">
+                            ${buttonText}
+                        </button>
+                    </div>
+                `;
+                loader.classList.add('hidden');
+
+                // Attach event listener to the dynamically created button
+                document.getElementById('guidanceButton').addEventListener('click', () => {
+                    fetchGuidanceFromGemini(soilType, season, phLevel, previousCrop, isAcidic);
+                });
+                return; // Stop here, don't proceed to crop recommendations
+            }
+
+            let basePrompt = `Based on the following conditions, recommend suitable crops for cultivation in India. For each crop, provide 'name', 'fertilizer', 'yield', 'marketPriceInsight' (a general insight into market demand/price stability for that crop, e.g., "High demand, stable prices"), and 'netIncomePerAcreINR' (estimated net income per acre in Indian Rupees, e.g., "₹ 50,000 - 70,000"). Return the output as a JSON array of objects.
+
+            Soil Type: ${soilType}
+            Season: ${season}
+            pH Level: ${phLevel}
+            Previous Crop: ${previousCrop || 'None'}
+            `;
+
+            if (clarifyingPrompt) {
+                basePrompt += `Additional Details: ${clarifyingPrompt}`;
+            }
+
+            // Define the expected JSON schema for the AI response
+            const responseSchema = {
+                type: "ARRAY",
+                items: {
+                    type: "OBJECT",
+                    properties: {
+                        name: { type: "STRING" },
+                        fertilizer: { type: "STRING" },
+                        yield: { type: "STRING" },
+                        marketPriceInsight: { type: "STRING" },
+                        netIncomePerAcreINR: { type: "STRING" },
+                        details: { type: "STRING" } // General details about the crop
+                    },
+                    required: ["name", "fertilizer", "yield", "marketPriceInsight", "netIncomePerAcreINR", "details"]
+                }
+            };
+
+            recommendationTitle.textContent = "AI-Powered Crop Recommendations";
+            recommendationTitle.classList.remove('sr-only');
+
+            try {
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: basePrompt }] }],
+                    generationConfig: {
+                        responseMimeType: "application/json",
+                        responseSchema: responseSchema,
+                        temperature: 0.7,
+                        topP: 0.95,
+                        topK: 40,
+                    },
+                    safetySettings: [
+                        { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                        { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+                    ],
+                };
+
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API error: ${response.status} ${response.statusText} - ${JSON.stringify(errorData)}`);
+                }
+
+                const result = await response.json();
+                const aiResponseText = result.candidates[0].content.parts[0].text;
+                const recommendations = JSON.parse(aiResponseText);
+
+                if (recommendations && recommendations.length > 0) {
+                    recommendations.forEach(crop => {
+                        const cropCard = document.createElement('div');
+                        cropCard.className = 'bg-white p-6 rounded-xl shadow-md border border-emerald-100 animate-fadeIn';
+                        cropCard.innerHTML = `
+                            <h3 class="text-xl font-bold text-emerald-800 mb-2">${crop.name}</h3>
+                            <p class="text-gray-600 mb-1"><span class="thick-font">Fertilizer:</span> ${crop.fertilizer}</p>
+                            <p class="text-gray-600 mb-1"><span class="thick-font">Expected Yield:</span> ${crop.yield}</p>
+                            <p class="text-gray-600 mb-1"><span class="thick-font">Market Insight:</span> ${crop.marketPriceInsight}</p>
+                            <p class="text-gray-600 mb-3"><span class="extra-thick-font text-green-700">Net Income (Est.):</span> ${crop.netIncomePerAcreINR}</p>
+                            <p class="text-gray-700 text-sm leading-relaxed">${crop.details}</p>
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                <button class="btn-info text-sm py-1 px-3" onclick="getFertilizerGuide('${crop.name}', '${soilType}')">Fertilizer Guide</button>
+                                <button class="btn-info text-sm py-1 px-3" onclick="getPestDiseaseInfo('${crop.name}')">Pest/Disease Info</button>
+                                <button class="btn-info text-sm py-1 px-3" onclick="getSustainablePractices('${crop.name}')">Sustainable Practices</button>
+                            </div>
+                        `;
+                        resultsContainer.appendChild(cropCard);
+                    });
+                } else {
+                    resultsContainer.innerHTML = `<p class="text-yellow-600 text-center font-semibold text-lg mt-4">No specific recommendations found based on your input. Try providing more details!</p>`;
+                    noRecommendationActions.classList.remove('hidden'); // Show "Provide More Details" option
+                }
+            } catch (error) {
+                console.error("Error fetching recommendations:", error);
+                resultsContainer.innerHTML = `<p class="text-red-600 text-center font-semibold text-lg mt-4">An error occurred while fetching recommendations: ${error.message}. Please try again.</p>`;
+                noRecommendationActions.classList.remove('hidden'); // Show "Provide More Details" option
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        // Event listener for the main form submission
+        form.addEventListener('submit', (event) => {
+            event.preventDefault(); // Prevent default form submission (page reload)
+            getRecommendations();
+        });
+
+        // Event listener for "Provide More Details" button
+        askClarifyingQuestionButton.addEventListener('click', () => {
+            clarifyingQuestionDiv.classList.remove('hidden'); // Show the clarifying input field
+            askClarifyingQuestionButton.classList.add('hidden'); // Hide this button
+            clarifyingInfoInput.focus(); // Put cursor in the new input
+        });
+
+        // Add event listener to the clarifying info input to re-run recommendation
+        clarifyingInfoInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission
+                getRecommendations(clarifyingInfoInput.value.trim());
+            }
+        });
+
+        // --- END JavaScript for AI Recommendation System ---
+
+        // --- START JavaScript for Contact Form with Formspree ---
+        const contactForm = document.getElementById('contactForm');
+
+        contactForm.addEventListener('submit', async (event) => {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get form values
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const message = document.getElementById('message').value.trim();
+
+            // Basic validation
+            if (!name || !email || !message) {
+                showModal('Error', '<p class="text-red-600">Please fill in all fields.</p>');
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showModal('Error', '<p class="text-red-600">Please enter a valid email address.</p>');
+                return;
+            }
+
+            // Show loading state
+            showModal('Sending Message', '<p class="text-gray-600">Please wait while your message is being sent...</p>');
+
+            // Send form data to Formspree
+            const formData = new FormData(contactForm);
+            try {
+                const response = await fetch('https://formspree.io/f/myzjezyd', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showModal('Success', '<p class="text-emerald-700">Your message has been sent successfully! We will get back to you soon.</p>');
+                    contactForm.reset(); // Clear the form
+                } else {
+                    const errorData = await response.json();
+                    showModal('Error', `<p class="text-red-600">Failed to send your message. Please try again later. (Error: ${errorData.error || 'Unknown error'})</p>`);
+                }
+            } catch (error) {
+                showModal('Error', `<p class="text-red-600">An error occurred: ${error.message}. Please try again.</p>`);
+                console.error('Form submission error:', error);
+            }
+        });
+        // --- END JavaScript for Contact Form with Formspree ---
+
+        // --- START JavaScript for Smooth Smoky Cursor Effect ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const body = document.body;
+
+            // Create a main cursor dot that follows the mouse
+            const cursorDot = document.createElement('div');
+            cursorDot.className = 'cursor-dot';
+            body.appendChild(cursorDot);
+
+            // Update cursor dot position and create smoky particles
+            body.addEventListener('mousemove', (e) => {
+                // Update the main cursor dot position
+                cursorDot.style.left = `${e.clientX}px`;
+                cursorDot.style.top = `${e.clientY}px`;
+
+                // Create a smoky particle
+                const smokyParticle = document.createElement('div');
+                smokyParticle.className = 'smoky-cursor';
+                body.appendChild(smokyParticle);
+
+                smokyParticle.style.left = `${e.clientX}px`;
+                smokyParticle.style.top = `${e.clientY}px`;
+
+                // Remove the particle after its animation ends
+                smokyParticle.addEventListener('animationend', () => {
+                    smokyParticle.remove();
+                });
+            });
+
+            // Hide the main cursor dot when the mouse leaves the window
+            body.addEventListener('mouseleave', () => {
+                cursorDot.style.opacity = '0';
+            });
+
+            // Show the main cursor dot when the mouse enters the window
+            body.addEventListener('mouseenter', () => {
+                cursorDot.style.opacity = '1';
+            });
+        });
+        // --- END JavaScript for Smooth Smoky Cursor Effect ---
+    </script>
+</body>
+</html>/
