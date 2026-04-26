@@ -4,16 +4,11 @@ from flask_cors import CORS
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
-import google.generativeai as genai
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# Configure Flask to serve static files from the root directory
 app = Flask(__name__, static_folder='.', static_url_path='')
 CORS(app) 
 
-# ─── MACHINE LEARNING MODEL ──────────────────────────────────────────────────
+# ─── MACHINE LEARNING MODEL (Random Forest) ──────────────────────────────────
 def train_model():
     # Synthetic dataset mimicking the Kaggle "Crop_recommendation.csv"
     data = [
@@ -26,6 +21,8 @@ def train_model():
         [40, 50, 60, 20.0, 50.0, 5.5, 80.0, 'Wheat'],
         [20, 10, 10, 30.0, 90.0, 4.5, 250.0, 'Coffee'],
         [70, 40, 20, 26.0, 85.0, 6.8, 190.0, 'Banana'],
+        [80, 50, 20, 25.0, 70.0, 6.0, 150.0, 'Sugarcane'],
+        [50, 60, 30, 24.0, 60.0, 6.2, 120.0, 'Groundnut']
     ]
     df = pd.DataFrame(data, columns=['N', 'P', 'K', 'temp', 'hum', 'ph', 'rain', 'label'])
     X = df.drop('label', axis=1)
@@ -35,14 +32,6 @@ def train_model():
     return model
 
 ml_model = train_model()
-
-# ─── ONLINE AI (GEMINI) ─────────────────────────────────────────────────────
-GEMINI_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
-if GEMINI_KEY != "YOUR_GEMINI_API_KEY":
-    genai.configure(api_key=GEMINI_KEY)
-    ai_model = genai.GenerativeModel('gemini-pro')
-else:
-    ai_model = None
 
 # ─── ROUTES ──────────────────────────────────────────────────────────────────
 
@@ -71,21 +60,12 @@ def predict():
         probabilities = ml_model.predict_proba(features)[0]
         confidence = round(max(probabilities) * 100, 2)
         
-        ai_analysis = "AI Analysis is currently unavailable. Please set a valid GEMINI_API_KEY."
-        if ai_model:
-            try:
-                prompt = f"As an agricultural expert, analyze these conditions: pH {ph}, Temp {temp}C, Humidity {hum}%. The ML model predicted {prediction}. Provide a 3-sentence expert advice on why this crop is suitable and one key risk factor."
-                response = ai_model.generate_content(prompt)
-                ai_analysis = response.text
-            except Exception as e:
-                ai_analysis = f"AI analysis error: {str(e)}"
-
         return jsonify({
             "status": "success",
             "prediction": prediction,
             "confidence": f"{confidence}%",
-            "ai_expert_advice": ai_analysis,
-            "source": "Python Random Forest + Google Gemini AI"
+            "ai_expert_advice": f"Based on our Random Forest ML model, {prediction} is highly recommended for these soil conditions. It shows the best growth potential and resource efficiency.",
+            "source": "Python Random Forest Engine"
         })
 
     except Exception as e:
@@ -93,5 +73,4 @@ def predict():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5001))
-    print(f"🚀 AI Recommendation Backend Running on port {port}")
-    app.run(host='0.0.0.0', port=port, debug=True)
+    app.run(host='0.0.0.0', port=port)

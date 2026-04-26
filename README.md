@@ -4,7 +4,7 @@ A professional-grade, full-stack agricultural intelligence platform that combine
 
 ![Project Status](https://img.shields.io/badge/Status-Production--Ready-brightgreen)
 ![Tech](https://img.shields.io/badge/Stack-Python%20|%20Flask%20|%20JS-blue)
-![AI](https://img.shields.io/badge/Intelligence-Gemini%20Pro%20|%20Random%20Forest-orange)
+![AI](https://img.shields.io/badge/Intelligence-Random%20Forest-orange)
 
 ---
 
@@ -15,10 +15,9 @@ A professional-grade, full-stack agricultural intelligence platform that combine
 - **Dynamic Image Loader**: Integrated **Wikipedia API** bridge that fetches guaranteed-correct botanical thumbnails for academic accuracy.
 - **Glassmorphism Design**: Modern, responsive UI with hover-zoom effects and consistent gradient overlays.
 
-### 🧠 Unified AI/ML Backend
+### 🧠 Pure ML Backend
 - **Random Forest Classifier**: A trained ML model that predicts optimal crops based on NPK (Nitrogen, Phosphorus, Potassium), Temperature, Humidity, pH, and Rainfall.
-- **Expert Advisory (Google Gemini)**: Generative AI provides real-time, context-aware agricultural advice and risk factor analysis for every prediction.
-- **Reliability Fallback**: A local heuristic engine ensures the platform provides basic recommendations even if the AI server is offline.
+- **Reliability Fallback**: A local heuristic engine ensures the platform provides basic recommendations even if the server is offline.
 
 ### 📍 Intelligent Farm Widgets
 - **Location-Aware**: Automatic soil and weather estimation based on the user's GPS or manual search.
@@ -45,8 +44,7 @@ This project is optimized for a single-service deployment on **Render**.
    - **Runtime**: `Python 3`
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `gunicorn app:app`
-3. **Add Environment Variables**:
-   - `GEMINI_API_KEY`: Your Google AI Studio key.
+3. **Deployment**: Once the build finishes, your site will be live!
 
 ---
 
