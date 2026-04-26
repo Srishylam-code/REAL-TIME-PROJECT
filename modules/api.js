@@ -265,7 +265,7 @@ export const api = {
     async getRecommendations(data) {
         let finalResults = [];
         try {
-            const mlResponse = await fetch('http://localhost:5001/api/predict', {
+            const mlResponse = await fetch('/api/predict', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
