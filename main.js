@@ -5,12 +5,22 @@
 
 import { api }           from './modules/api.js';
 import { ui }            from './modules/ui.js';
-import { validateInputs } from './modules/utils.js';
+import { validateInputs, formatINR } from './modules/utils.js';
 import { location as loc } from './modules/location.js';
+import { i18n }          from './modules/i18n.js';
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', async () => {
+    // ── Internationalization ──────────────────────────────────────────────────
+    i18n.init();
+
+    document.querySelectorAll('.lang-opt').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            i18n.setLanguage(e.target.dataset.lang);
+        });
+    });
+
     // ── Application Initialization ─────────────────────────────────────────────
 
     // ── pH Slider ─────────────────────────────────────────────────────────────
@@ -61,6 +71,50 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     let currentSelectedLocation = null;
     let searchTimeout = null;
+    let selectedCropsForComparison = [];
+
+    const compareFab = document.getElementById('compareFab');
+    const updateCompareFab = () => {
+        if (!compareFab) return;
+        const count = selectedCropsForComparison.length;
+        if (count >= 2) {
+            compareFab.classList.add('visible');
+            compareFab.style.display = 'flex';
+            compareFab.querySelector('span').textContent = count;
+        } else {
+            compareFab.style.display = 'none';
+        }
+    };
+
+    if (compareFab) {
+        compareFab.addEventListener('click', () => {
+            if (selectedCropsForComparison.length < 2) return;
+            
+            const [c1, c2] = selectedCropsForComparison;
+            const area = parseFloat(document.getElementById('landArea')?.value || 1);
+            
+            let html = `<div class="compare-table-wrap" style="overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; background:white; color:var(--slate-800); font-size:14px;">
+                    <thead>
+                        <tr style="background:var(--slate-50);">
+                            <th style="padding:15px; border:1px solid #eee; text-align:left;">Feature</th>
+                            <th style="padding:15px; border:1px solid #eee;">${c1.name} ${c1.icon}</th>
+                            <th style="padding:15px; border:1px solid #eee;">${c2.name} ${c2.icon}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td style="padding:12px; border:1px solid #eee; font-weight:600;">Suitability</td><td style="text-align:center; border:1px solid #eee;">${c1.score}%</td><td style="text-align:center; border:1px solid #eee;">${c2.score}%</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #eee; font-weight:600;">Est. Total Profit</td><td style="text-align:center; border:1px solid #eee; color:var(--green-600); font-weight:700;">${formatINR(c1.netIncomePerAcreINR * area)}</td><td style="text-align:center; border:1px solid #eee; color:var(--green-600); font-weight:700;">${formatINR(c2.netIncomePerAcreINR * area)}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #eee; font-weight:600;">Yield</td><td style="text-align:center; border:1px solid #eee;">${c1.yield}</td><td style="text-align:center; border:1px solid #eee;">${c2.yield}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #eee; font-weight:600;">Fertilizers</td><td style="text-align:center; border:1px solid #eee; font-size:12px;">${c1.fertilizer.join(', ')}</td><td style="text-align:center; border:1px solid #eee; font-size:12px;">${c2.fertilizer.join(', ')}</td></tr>
+                        <tr><td style="padding:12px; border:1px solid #eee; font-weight:600;">Market Insight</td><td style="text-align:center; border:1px solid #eee;">${c1.marketPriceInsight}</td><td style="text-align:center; border:1px solid #eee;">${c2.marketPriceInsight}</td></tr>
+                    </tbody>
+                </table>
+            </div>`;
+            
+            ui.showModal('⚖️ Crop Comparison Mode', html);
+        });
+    }
 
     // Local Storage for Recent Locations
     const getRecent = () => JSON.parse(localStorage.getItem('smartcrop_recent_locs') || '[]');
@@ -143,6 +197,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 <span class="loc-soil-badge">🪱 Soil: <strong>${data.soilType}</strong></span>
                 <span class="loc-ph-badge">🧪 pH: <strong>${data.ph != null ? data.ph.toFixed(1) : '6.8'}</strong></span>
             </div>
+            <div id="forecastContainer">${ui.renderForecast(data.forecast)}</div>
             <p class="loc-note">✅ Environmental conditions applied. Calculating recommendations…</p>`;
 
         container.classList.remove('hidden');
@@ -330,8 +385,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const season       = seasonSelect?.value || '';
         const phLevel      = parseFloat(phSlider?.value ?? 7);
         const previousCrop = document.getElementById('previousCrop')?.value.trim() ?? '';
+        const landArea     = document.getElementById('landArea')?.value || '1.0';
 
-        const formData = { soilType, season, phLevel, previousCrop };
+        const formData = { soilType, season, phLevel, previousCrop, landArea };
 
         // Validate
         const errors = validateInputs(formData);
@@ -403,7 +459,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             const crops = await api.getRecommendations(formData);
 
-            ui.renderRecommendations(crops, soilType, async (type, cropName, soil) => {
+            selectedCropsForComparison = [];
+            updateCompareFab();
+
+            ui.renderRecommendations(crops, soilType, landArea, async (type, cropName, soil) => {
                 const typeLabel = { fertilizer: 'Fertilizer Guide', pest: 'Pest Control Guide', sustainable: 'Sustainable Practices' };
                 const typeIcon  = { fertilizer: '🧪', pest: '🐛', sustainable: '♻️' };
                 ui.showModal(`${typeIcon[type] || ''} ${typeLabel[type] || type}: ${cropName}`, '');
@@ -413,6 +472,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } catch (err) {
                     ui.modal.text.innerHTML = '<p class="error-text">Could not load details. Please try again.</p>';
                 }
+            }, (isSelected, crop) => {
+                if (isSelected) {
+                    if (selectedCropsForComparison.length >= 2) {
+                        ui.showToast('You can only compare 2 crops at a time.', 'info');
+                        // Uncheck the latest one? We'll let the user handle it but limit the state
+                        selectedCropsForComparison.shift();
+                    }
+                    selectedCropsForComparison.push(crop);
+                } else {
+                    selectedCropsForComparison = selectedCropsForComparison.filter(c => c.name !== crop.name);
+                }
+                updateCompareFab();
             });
 
             // ── Dynamic 3D Re-init ──────────────────────────────────────────

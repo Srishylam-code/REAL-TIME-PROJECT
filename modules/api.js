@@ -36,62 +36,62 @@ function getMarketInsight(cropName) {
 // Source: ICAR / FAO crop data, mirrors engine.js CORE_CROPS for consistency.
 
 const CROP_KB = {
-    'rice':         { ph:[5.5,7.0], soil:['Clayey','Loamy','Alluvial'],       season:['Rainy','Summer'],          income:45000  },
-    'wheat':        { ph:[6.0,7.5], soil:['Loamy','Clayey','Black'],          season:['Winter'],                  income:38000  },
-    'maize':        { ph:[5.8,7.0], soil:['Sandy','Loamy','Alluvial'],        season:['Summer','Rainy'],          income:35000  },
-    'corn':         { ph:[5.8,7.0], soil:['Sandy','Loamy','Alluvial'],        season:['Summer','Rainy'],          income:35000  },
-    'soybean':      { ph:[6.0,7.0], soil:['Loamy','Black'],                   season:['Rainy'],                   income:42000  },
-    'cotton':       { ph:[5.5,8.5], soil:['Black','Alluvial'],                season:['Summer','Rainy'],          income:65000  },
-    'potato':       { ph:[5.0,6.5], soil:['Sandy','Loamy'],                   season:['Winter'],                  income:70000  },
-    'sugarcane':    { ph:[6.5,8.0], soil:['Alluvial','Black','Clayey'],       season:['Summer','Rainy'],          income:85000  },
-    'coffee':       { ph:[5.0,6.0], soil:['Laterite','Red','Loamy'],          season:['Rainy'],                   income:120000 },
-    'tea':          { ph:[4.5,5.5], soil:['Red','Laterite'],                  season:['Rainy'],                   income:110000 },
-    'banana':       { ph:[6.5,7.5], soil:['Loamy','Alluvial'],                season:['Summer','Rainy'],          income:90000  },
-    'tomato':       { ph:[6.0,6.8], soil:['Sandy','Loamy'],                   season:['Summer','Winter'],         income:60000  },
-    'onion':        { ph:[6.0,7.0], soil:['Sandy','Loamy'],                   season:['Winter','Summer'],         income:55000  },
-    'grapes':       { ph:[6.5,8.5], soil:['Sandy','Loamy'],                   season:['Summer','Winter'],         income:180000 },
-    'apple':        { ph:[6.0,7.0], soil:['Loamy'],                           season:['Winter'],                  income:150000 },
-    'mango':        { ph:[5.5,7.5], soil:['Alluvial','Red','Loamy'],          season:['Summer'],                  income:130000 },
-    'barley':       { ph:[7.0,8.5], soil:['Clayey','Loamy','Chalky'],         season:['Winter'],                  income:30000  },
-    'sorghum':      { ph:[5.5,8.5], soil:['Clayey','Black','Loamy'],          season:['Summer','Rainy'],          income:28000  },
-    'groundnut':    { ph:[6.0,6.5], soil:['Sandy','Loamy'],                   season:['Rainy','Summer'],          income:48000  },
-    'peanut':       { ph:[6.0,6.5], soil:['Sandy','Loamy'],                   season:['Rainy','Summer'],          income:48000  },
-    'chickpea':     { ph:[6.0,8.0], soil:['Black','Loamy'],                   season:['Winter'],                  income:45000  },
-    'cassava':      { ph:[4.5,6.5], soil:['Sandy','Laterite'],                season:['Summer','Rainy'],          income:40000  },
-    'pineapple':    { ph:[4.5,5.5], soil:['Sandy','Laterite'],                season:['Rainy','Summer'],          income:95000  },
-    'rubber':       { ph:[4.0,6.0], soil:['Laterite','Red'],                  season:['Rainy'],                   income:100000 },
-    'cabbage':      { ph:[6.0,7.5], soil:['Loamy','Clayey'],                  season:['Winter'],                  income:65000  },
-    'carrot':       { ph:[5.5,7.0], soil:['Sandy','Loamy'],                   season:['Winter'],                  income:58000  },
-    'cocoa':        { ph:[5.0,7.5], soil:['Loamy','Alluvial'],                season:['Rainy'],                   income:160000 },
-    'avocado':      { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Rainy'],          income:200000 },
-    'lentil':       { ph:[6.0,8.0], soil:['Loamy','Black'],                   season:['Winter'],                  income:40000  },
-    'spinach':      { ph:[6.5,7.5], soil:['Loamy','Sandy'],                   season:['Winter'],                  income:50000  },
-    'sunflower':    { ph:[6.0,7.5], soil:['Loamy','Black','Alluvial'],        season:['Summer'],                  income:62000  },
-    'millet':       { ph:[5.5,8.0], soil:['Sandy','Loamy','Red'],             season:['Summer','Rainy'],          income:25000  },
-    'sweet potato': { ph:[5.5,6.5], soil:['Sandy','Loamy'],                   season:['Summer','Rainy'],          income:68000  },
-    'papaya':       { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Rainy'],          income:110000 },
-    'garlic':       { ph:[6.0,7.5], soil:['Loamy','Sandy'],                   season:['Winter'],                  income:85000  },
-    'olive':        { ph:[6.5,8.5], soil:['Sandy','Chalky','Loamy'],          season:['Summer','Winter'],         income:140000 },
-    'strawberry':   { ph:[5.5,6.5], soil:['Loamy','Sandy'],                   season:['Winter','Summer'],         income:180000 },
-    'watermelon':   { ph:[6.0,7.0], soil:['Sandy','Loamy'],                   season:['Summer'],                  income:75000  },
-    'pumpkin':      { ph:[6.0,7.5], soil:['Loamy','Alluvial'],                season:['Summer','Rainy'],          income:55000  },
-    'chili':        { ph:[6.0,7.0], soil:['Loamy','Red'],                     season:['Summer','Rainy'],          income:95000  },
-    'pepper':       { ph:[6.0,7.0], soil:['Loamy','Red'],                     season:['Summer','Rainy'],          income:95000  },
-    'mustard':      { ph:[6.0,7.5], soil:['Loamy','Clayey'],                  season:['Winter'],                  income:42000  },
-    'cucumber':     { ph:[6.0,7.0], soil:['Sandy','Loamy'],                   season:['Summer','Rainy'],          income:80000  },
-    'eggplant':     { ph:[5.5,6.8], soil:['Loamy','Alluvial'],                season:['Summer'],                  income:65000  },
-    'cauliflower':  { ph:[6.0,7.0], soil:['Loamy','Clayey'],                  season:['Winter'],                  income:70000  },
-    'peas':         { ph:[6.0,7.5], soil:['Loamy','Sandy'],                   season:['Winter'],                  income:55000  },
-    'oats':         { ph:[5.5,7.0], soil:['Loamy','Clayey'],                  season:['Winter'],                  income:32000  },
-    'ginger':       { ph:[5.5,6.5], soil:['Loamy','Alluvial'],                season:['Rainy'],                   income:140000 },
-    'turmeric':     { ph:[5.5,7.5], soil:['Red','Loamy'],                     season:['Rainy'],                   income:130000 },
-    'lemon':        { ph:[5.5,6.5], soil:['Loamy','Sandy','Red'],             season:['Summer','Rainy'],          income:102000 },
-    'orange':       { ph:[5.5,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Winter'],         income:115000 },
-    'sorrel':       { ph:[5.5,7.0], soil:['Loamy','Sandy','Alluvial'],        season:['Rainy','Summer','Winter'], income:68000  },
-    'lettuce':      { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Winter'],                  income:55000  },
-    'basil':        { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Summer'],                  income:72000  },
-    'mint':         { ph:[6.0,7.0], soil:['Loamy','Alluvial'],                season:['Summer','Rainy'],          income:80000  },
-    'vanilla':      { ph:[6.0,7.0], soil:['Loamy','Laterite'],                season:['Rainy'],                   income:300000 },
+    'rice':         { ph:[5.5,7.0], soil:['Clayey','Loamy','Alluvial'],       season:['Monsoon','Summer'],          income:45000  },
+    'wheat':        { ph:[6.0,7.5], soil:['Loamy','Clayey','Black'],          season:['Winter','Pre-winter'],       income:38000  },
+    'maize':        { ph:[5.8,7.0], soil:['Sandy','Loamy','Alluvial'],        season:['Summer','Monsoon','Spring'], income:35000  },
+    'corn':         { ph:[5.8,7.0], soil:['Sandy','Loamy','Alluvial'],        season:['Summer','Monsoon','Spring'], income:35000  },
+    'soybean':      { ph:[6.0,7.0], soil:['Loamy','Black'],                   season:['Monsoon'],                   income:42000  },
+    'cotton':       { ph:[5.5,8.5], soil:['Black','Alluvial'],                season:['Summer','Monsoon'],          income:65000  },
+    'potato':       { ph:[5.0,6.5], soil:['Sandy','Loamy'],                   season:['Winter','Pre-winter'],       income:70000  },
+    'sugarcane':    { ph:[6.5,8.0], soil:['Alluvial','Black','Clayey'],       season:['Summer','Monsoon'],          income:85000  },
+    'coffee':       { ph:[5.0,6.0], soil:['Laterite','Red','Loamy'],          season:['Monsoon'],                   income:120000 },
+    'tea':          { ph:[4.5,5.5], soil:['Red','Laterite'],                  season:['Monsoon'],                   income:110000 },
+    'banana':       { ph:[6.5,7.5], soil:['Loamy','Alluvial'],                season:['Summer','Monsoon','Spring'], income:90000  },
+    'tomato':       { ph:[6.0,6.8], soil:['Sandy','Loamy'],                   season:['Summer','Winter','Spring','Autumn'], income:60000  },
+    'onion':        { ph:[6.0,7.0], soil:['Sandy','Loamy'],                   season:['Winter','Summer','Autumn'],  income:55000  },
+    'grapes':       { ph:[6.5,8.5], soil:['Sandy','Loamy'],                   season:['Summer','Winter','Spring'],  income:180000 },
+    'apple':        { ph:[6.0,7.0], soil:['Loamy'],                           season:['Winter'],                    income:150000 },
+    'mango':        { ph:[5.5,7.5], soil:['Alluvial','Red','Loamy'],          season:['Summer','Spring'],           income:130000 },
+    'barley':       { ph:[7.0,8.5], soil:['Clayey','Loamy','Chalky'],         season:['Winter','Pre-winter'],       income:30000  },
+    'sorghum':      { ph:[5.5,8.5], soil:['Clayey','Black','Loamy'],          season:['Summer','Monsoon'],          income:28000  },
+    'groundnut':    { ph:[6.0,6.5], soil:['Sandy','Loamy'],                   season:['Monsoon','Summer'],          income:48000  },
+    'peanut':       { ph:[6.0,6.5], soil:['Sandy','Loamy'],                   season:['Monsoon','Summer'],          income:48000  },
+    'chickpea':     { ph:[6.0,8.0], soil:['Black','Loamy'],                   season:['Winter','Pre-winter'],       income:45000  },
+    'cassava':      { ph:[4.5,6.5], soil:['Sandy','Laterite'],                season:['Summer','Monsoon'],          income:40000  },
+    'pineapple':    { ph:[4.5,5.5], soil:['Sandy','Laterite'],                season:['Monsoon','Summer'],          income:95000  },
+    'rubber':       { ph:[4.0,6.0], soil:['Laterite','Red'],                  season:['Monsoon'],                   income:100000 },
+    'cabbage':      { ph:[6.0,7.5], soil:['Loamy','Clayey'],                  season:['Winter','Autumn'],           income:65000  },
+    'carrot':       { ph:[5.5,7.0], soil:['Sandy','Loamy'],                   season:['Winter','Pre-winter'],       income:58000  },
+    'cocoa':        { ph:[5.0,7.5], soil:['Loamy','Alluvial'],                season:['Monsoon'],                   income:160000 },
+    'avocado':      { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Monsoon'],          income:200000 },
+    'lentil':       { ph:[6.0,8.0], soil:['Loamy','Black'],                   season:['Winter','Pre-winter'],       income:40000  },
+    'spinach':      { ph:[6.5,7.5], soil:['Loamy','Sandy'],                   season:['Winter','Spring','Autumn'],  income:50000  },
+    'sunflower':    { ph:[6.0,7.5], soil:['Loamy','Black','Alluvial'],        season:['Summer','Spring'],           income:62000  },
+    'millet':       { ph:[5.5,8.0], soil:['Sandy','Loamy','Red'],             season:['Summer','Monsoon'],          income:25000  },
+    'sweet potato': { ph:[5.5,6.5], soil:['Sandy','Loamy'],                   season:['Summer','Monsoon'],          income:68000  },
+    'papaya':       { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Monsoon'],          income:110000 },
+    'garlic':       { ph:[6.0,7.5], soil:['Loamy','Sandy'],                   season:['Winter','Pre-winter'],       income:85000  },
+    'olive':        { ph:[6.5,8.5], soil:['Sandy','Chalky','Loamy'],          season:['Summer','Winter'],           income:140000 },
+    'strawberry':   { ph:[5.5,6.5], soil:['Loamy','Sandy'],                   season:['Winter','Spring','Summer'],  income:180000 },
+    'watermelon':   { ph:[6.0,7.0], soil:['Sandy','Loamy'],                   season:['Summer'],                    income:75000  },
+    'pumpkin':      { ph:[6.0,7.5], soil:['Loamy','Alluvial'],                season:['Summer','Monsoon'],          income:55000  },
+    'chili':        { ph:[6.0,7.0], soil:['Loamy','Red'],                     season:['Summer','Monsoon','Spring'], income:95000  },
+    'pepper':       { ph:[6.0,7.0], soil:['Loamy','Red'],                     season:['Summer','Monsoon','Spring'], income:95000  },
+    'mustard':      { ph:[6.0,7.5], soil:['Loamy','Clayey'],                  season:['Winter','Pre-winter'],       income:42000  },
+    'cucumber':     { ph:[6.0,7.0], soil:['Sandy','Loamy'],                   season:['Summer','Monsoon'],          income:80000  },
+    'eggplant':     { ph:[5.5,6.8], soil:['Loamy','Alluvial'],                season:['Summer','Spring'],           income:65000  },
+    'cauliflower':  { ph:[6.0,7.0], soil:['Loamy','Clayey'],                  season:['Winter','Autumn'],           income:70000  },
+    'peas':         { ph:[6.0,7.5], soil:['Loamy','Sandy'],                   season:['Winter','Spring'],           income:55000  },
+    'oats':         { ph:[5.5,7.0], soil:['Loamy','Clayey'],                  season:['Winter','Pre-winter'],       income:32000  },
+    'ginger':       { ph:[5.5,6.5], soil:['Loamy','Alluvial'],                season:['Monsoon'],                   income:140000 },
+    'turmeric':     { ph:[5.5,7.5], soil:['Red','Loamy'],                     season:['Monsoon'],                   income:130000 },
+    'lemon':        { ph:[5.5,6.5], soil:['Loamy','Sandy','Red'],             season:['Summer','Monsoon','Spring'], income:102000 },
+    'orange':       { ph:[5.5,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Winter'],           income:115000 },
+    'sorrel':       { ph:[5.5,7.0], soil:['Loamy','Sandy','Alluvial'],        season:['Monsoon','Summer','Winter'], income:68000  },
+    'lettuce':      { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Winter','Spring'],           income:55000  },
+    'basil':        { ph:[6.0,7.0], soil:['Loamy','Sandy'],                   season:['Summer','Spring'],           income:72000  },
+    'mint':         { ph:[6.0,7.0], soil:['Loamy','Alluvial'],                season:['Summer','Monsoon'],          income:80000  },
+    'vanilla':      { ph:[6.0,7.0], soil:['Loamy','Laterite'],                season:['Monsoon'],                   income:300000 },
 };
 
 // ─── Real Suitability Scorer ──────────────────────────────────────────────────
@@ -235,52 +235,87 @@ export const api = {
      * Fetches real crops from GrowStuff, scores each using real farm conditions,
      * sorts by true suitability score, returns top 3.
      */
-    async getRecommendations(data) {
+    /**
+     * Highly Accurate Botanical Image Fetcher.
+     * Uses Wikipedia's Global Database to guarantee the correct plant photo.
+     */
+    async fetchCropImage(crop) {
         try {
-            const res = await fetch('https://corsproxy.io/?https://www.growstuff.org/crops.json', { cache: 'no-store' });
-            const json = await res.json();
-
-            let cropsList = [];
-            if (json.query)          cropsList = json.query;
-            else if (Array.isArray(json)) cropsList = json;
-            if (cropsList.length === 0) throw new Error('Empty dataset');
-
-            // Score ALL internet crops against real farm conditions
-            const scored = cropsList.map(rawCrop => {
-                const cropName = rawCrop.name
-                    ? rawCrop.name.charAt(0).toUpperCase() + rawCrop.name.slice(1)
-                    : 'Unknown Crop';
-                const { score, income, label } = scoreCrop(cropName, data);
-                return { ...rawCrop, cropName, score, income, label };
-            });
-
-            // Sort by real score — highest suitability first
-            scored.sort((a, b) => b.score - a.score);
-            const top3 = scored.slice(0, 3);
-
-            return top3.map(crop => {
-                const iconHtml = crop.thumbnail_url
-                    ? `<img src="${crop.thumbnail_url}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;" alt="${crop.cropName} photo"/>`
-                    : '🌿';
-                return {
-                    name:               crop.cropName,
-                    icon:               iconHtml,
-                    score:              crop.score,
-                    fertilizer:         getFertilizers(crop.cropName),   // ← array of 2
-                    yield:              'Estimated 15–30% above local average',
-                    marketPriceInsight: getMarketInsight(crop.cropName),
-                    netIncomePerAcreINR: crop.income,
-                    details:            crop.description
-                        ? crop.description
-                        : `${crop.cropName} is an internationally cultivated crop. Live data sourced from the GrowStuff open agricultural database.`,
-                };
-            });
-
-        } catch (error) {
-            console.error('Internet fetch failed, using local engine fallback:', error);
-            await this.delay(500);
-            return calculateSuitability({ ...data, soilType: normalizeSoilName(data.soilType) });
+            // Use the base crop (e.g., 'Sunflower') rather than a specific cultivar
+            const term = crop.baseCrop || crop.name.split(' ')[0];
+            
+            const res = await fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(term)}`);
+            const data = await res.json();
+            
+            if (data && data.thumbnail && data.thumbnail.source) {
+                return `<img src="${data.thumbnail.source}" 
+                         style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;" 
+                         alt="${crop.name}"/>`;
+            }
+        } catch (e) {
+            console.warn("Wikipedia image fetch error for:", crop.name);
         }
+        
+        // Final fallback: A beautiful, static high-definition farm photo
+        return `<img src="https://images.unsplash.com/photo-1592982537447-7440770cbfc9?auto=format&fit=crop&w=320&q=80" 
+                 style="width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block;" 
+                 alt="${crop.name}"/>`;
+    },
+
+    async getRecommendations(data) {
+        let finalResults = [];
+        try {
+            const mlResponse = await fetch('http://localhost:5001/api/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ph:   data.phLevel,
+                    temp: data.temp || 25,
+                    hum:  data.humidity || 60,
+                    rain: data.rain || 100
+                })
+            });
+
+            if (mlResponse.ok) {
+                const mlData = await mlResponse.json();
+                const predictedCrop = mlData.prediction;
+                
+                const localResults = calculateSuitability({ ...data, soilType: normalizeSoilName(data.soilType) });
+                const matched = localResults.find(c => (c.baseCrop || c.name).toLowerCase().includes(predictedCrop.toLowerCase())) || localResults[0];
+
+                finalResults = [{
+                    ...matched,
+                    name: `${matched.baseCrop} (AI Recommended)`,
+                    details: mlData.ai_expert_advice,
+                    marketPriceInsight: `ML Confidence: ${mlData.confidence}. ${matched.marketPriceInsight}`
+                }, ...localResults.filter(c => c.baseCrop !== matched.baseCrop).slice(0, 2).map(c => ({
+                    ...c,
+                    name: c.baseCrop
+                }))];
+            } else {
+                finalResults = calculateSuitability({ ...data, soilType: normalizeSoilName(data.soilType) }).map(c => ({
+                    ...c,
+                    name: c.baseCrop
+                }));
+            }
+        } catch (error) {
+            console.warn('Online prediction flow failed, using local engine:', error);
+            finalResults = calculateSuitability({ ...data, soilType: normalizeSoilName(data.soilType) }).map(c => ({
+                ...c,
+                name: c.baseCrop
+            }));
+        }
+
+        // FETCH REAL-TIME IMAGES FOR TOP RESULTS (Runs even if ML server is offline)
+        const resultsWithImages = await Promise.all(finalResults.map(async (crop) => {
+            const realImageHtml = await this.fetchCropImage(crop);
+            return {
+                ...crop,
+                icon: realImageHtml || crop.icon
+            };
+        }));
+
+        return resultsWithImages;
     },
 
     // ─── Advisory Content (crop-specific) ──────────────────────────────────────

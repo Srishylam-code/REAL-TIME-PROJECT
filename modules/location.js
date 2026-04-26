@@ -170,14 +170,23 @@ export function guessPH(state, country) {
 function detectSeason(lat) {
     const month    = new Date().getMonth() + 1;
     const northern = lat >= 0;
+    
     if (northern) {
-        if (month >= 6  && month <= 10) return 'Rainy';
-        if (month >= 11 || month <= 2)  return 'Winter';
-        return 'Summer';
+        // Northern Hemisphere (Optimized for India/Subtropics)
+        if (month === 2  || month === 3)  return 'Spring';
+        if (month >= 4  && month <= 6)   return 'Summer';
+        if (month >= 7  && month <= 9)   return 'Monsoon';
+        if (month === 10)                 return 'Autumn';
+        if (month === 11)                 return 'Pre-winter';
+        return 'Winter'; // Dec, Jan
     } else {
-        if (month >= 12 || month <= 4)  return 'Rainy';
-        if (month >= 5  && month <= 8)  return 'Winter';
-        return 'Summer';
+        // Southern Hemisphere (Offset by 6 months)
+        if (month === 8  || month === 9)  return 'Spring';
+        if (month >= 10 || month <= 12) return 'Summer';
+        if (month >= 1  && month <= 3)  return 'Monsoon';
+        if (month === 4)                 return 'Autumn';
+        if (month === 5)                 return 'Pre-winter';
+        return 'Winter'; // Jun, Jul
     }
 }
 
@@ -209,22 +218,43 @@ async function fetchWeather(lat, lon) {
         `?latitude=${lat}&longitude=${lon}` +
         `&current=temperature_2m,weather_code` +
         `&hourly=relative_humidity_2m,precipitation` +
-        `&forecast_days=1&timezone=auto`;
+        `&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max` +
+        `&forecast_days=6&timezone=auto`;
+
     const res = await fetch(url);
     if (!res.ok) throw new Error(`Weather HTTP ${res.status}`);
     const data = await res.json();
+    
     const cur = data.current || {};
     const hr  = data.hourly  || {};
+    const day = data.daily   || {};
+    
     const idx = Math.min(new Date().getHours(), (hr.time?.length ?? 1) - 1);
+    
+    // Build 5-day forecast (excluding today if needed, but usually showing today + 4)
+    const forecast = [];
+    if (day.time) {
+        for (let i = 1; i < day.time.length; i++) {
+            forecast.push({
+                date: day.time[i],
+                max:  day.temperature_2m_max[i],
+                min:  day.temperature_2m_min[i],
+                code: day.weather_code[i],
+                prob: day.precipitation_probability_max[i]
+            });
+        }
+    }
+
     return {
         temp:     cur.temperature_2m               ?? null,
         humidity: hr.relative_humidity_2m?.[idx]   ?? null,
         rain:     hr.precipitation?.[idx]           ?? null,
         code:     cur.weather_code                 ?? 0,
+        forecast: forecast
     };
 }
 
-function weatherLabel(code) {
+export function weatherLabel(code) {
     if (code === 0)  return { icon: '☀️',  label: 'Clear sky' };
     if (code <= 3)   return { icon: '🌤️', label: 'Partly cloudy' };
     if (code <= 48)  return { icon: '🌫️', label: 'Foggy' };

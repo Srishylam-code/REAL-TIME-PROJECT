@@ -5,6 +5,8 @@
  */
 
 import { formatINR } from './utils.js';
+import { weatherLabel } from './location.js';
+import { i18n } from './i18n.js';
 
 // ─── DOM Selectors ────────────────────────────────────────────────────────────
 
@@ -119,7 +121,7 @@ export const ui = {
 
 // ─── Recommendation Cards ─────────────────────────────────────────────────────
 
-    renderRecommendations(crops, soilType, onDetailClick) {
+    renderRecommendations(crops, soilType, landArea, onDetailClick, onCompareChange) {
         this.resultsContainer.innerHTML = '';
 
         if (!crops || crops.length === 0) {
@@ -135,7 +137,8 @@ export const ui = {
         // Reveal Results title
         const titleEl = this.recommendationTitle;
         titleEl.classList.remove('sr-only');
-        titleEl.textContent = '🌾 Crop Recommendations';
+        titleEl.textContent = i18n.get('results_title');
+        
 
         const rankLabels = ['🥇 Best Match', '🥈 2nd Choice', '🥉 3rd Choice'];
         const grid = document.createElement('div');
@@ -144,22 +147,18 @@ export const ui = {
         crops.forEach((crop, i) => {
             const score    = Math.min(100, Math.max(0, crop.score ?? 75));
             const badge    = score >= 80 ? 'badge-high' : score >= 50 ? 'badge-mod' : 'badge-low';
-            const badgeTxt = score >= 80 ? 'Highly Suitable' : score >= 50 ? 'Moderate Fit' : 'Low Fit';
-            // Build ring with fixed offset (no CSS transition to prevent re-animation)
+            const badgeTxt = score >= 80 ? i18n.get('highly_suitable') : score >= 50 ? i18n.get('moderate_fit') : i18n.get('low_fit');
             const ring = this._buildScoreRing(score);
+
+            const totalIncome = crop.netIncomePerAcreINR * (parseFloat(landArea) || 1);
 
             const card = document.createElement('article');
             card.className = 'crop-card glass animate-fadeIn';
             card.style.animationDelay = `${i * 150}ms`;
             card.setAttribute('aria-label', `${crop.name} recommendation`);
             
-            // 3D Tilt Attributes
             card.setAttribute('data-tilt', '');
             card.setAttribute('data-tilt-max', '7');
-            card.setAttribute('data-tilt-speed', '400');
-            card.setAttribute('data-tilt-perspective', '1000');
-            card.setAttribute('data-tilt-glare', '');
-            card.setAttribute('data-tilt-max-glare', '0.15');
 
             card.innerHTML = `
                 <div class="card-rank">${rankLabels[i] || ''}</div>
@@ -174,16 +173,19 @@ export const ui = {
                         <span class="score-label">${score}<small>/100</small></span>
                     </div>
                 </div>
+                
+                <!-- Comparison Checkbox -->
+                <div class="compare-toggle">
+                    <input type="checkbox" id="compare-${i}" class="compare-cb">
+                    <label for="compare-${i}">Add to Comparison</label>
+                </div>
+
                 <p class="crop-detail-text">${crop.details}</p>
                 <div class="metrics-grid">
-                    <div class="metric">
-                        <span class="metric-icon">🌱</span>
-                        <span class="metric-label">Recommended Fertilizers</span>
-                        <span class="metric-val fert-pills">${
-                            Array.isArray(crop.fertilizer)
-                                ? crop.fertilizer.map(f => `<span class="fert-pill">${f}</span>`).join('')
-                                : `<span class="fert-pill">${crop.fertilizer}</span>`
-                        }</span>
+                    <div class="metric highlight">
+                        <span class="metric-icon">💰</span>
+                        <span class="metric-label">${i18n.get('total_income')} (${landArea} Acres)</span>
+                        <span class="metric-val income">~${formatINR(totalIncome)}</span>
                     </div>
                     <div class="metric">
                         <span class="metric-icon">📈</span>
@@ -191,9 +193,13 @@ export const ui = {
                         <span class="metric-val">${crop.yield}</span>
                     </div>
                     <div class="metric">
-                        <span class="metric-icon">🪙</span>
-                        <span class="metric-label">Approx. Income/Acre <span class="approx-note">(indicative)</span></span>
-                        <span class="metric-val income">~${formatINR(crop.netIncomePerAcreINR)}</span>
+                        <span class="metric-icon">🧪</span>
+                        <span class="metric-label">Key Fertilizers</span>
+                        <span class="metric-val fert-pills">${
+                            Array.isArray(crop.fertilizer)
+                                ? crop.fertilizer.map(f => `<span class="fert-pill">${f}</span>`).join('')
+                                : `<span class="fert-pill">${crop.fertilizer}</span>`
+                        }</span>
                     </div>
                     <div class="metric">
                         <span class="metric-icon">🌍</span>
@@ -202,20 +208,17 @@ export const ui = {
                     </div>
                 </div>
                 <div class="card-actions">
-                    <button class="btn-guide" data-type="fertilizer" data-crop="${crop.name}" aria-label="Open fertilizer guide for ${crop.name}">
-                        🧪 Fertilizer Guide
-                    </button>
-                    <button class="btn-guide" data-type="pest" data-crop="${crop.name}" aria-label="Open pest control guide for ${crop.name}">
-                        🐛 Pest Control
-                    </button>
-                    <button class="btn-guide" data-type="sustainable" data-crop="${crop.name}" aria-label="Open sustainable practices for ${crop.name}">
-                        ♻️ Sustainable
-                    </button>
+                    <button class="btn-guide" data-type="fertilizer" data-crop="${crop.name}">🧪 Guide</button>
+                    <button class="btn-guide" data-type="pest" data-crop="${crop.name}">🐛 Pest</button>
+                    <button class="btn-guide" data-type="sustainable" data-crop="${crop.name}">♻️ Eco</button>
                 </div>`;
 
             card.querySelectorAll('.btn-guide').forEach(btn => {
-                btn.onclick = () => onDetailClick(btn.dataset.type, btn.dataset.crop, soilType);
+                btn.onclick = () => onDetailClick(btn.dataset.type, crop.name, soilType);
             });
+
+            const cb = card.querySelector('.compare-cb');
+            cb.onchange = () => onCompareChange(cb.checked, crop);
 
             grid.appendChild(card);
         });
@@ -298,4 +301,31 @@ export const ui = {
         const banner = this.offlineBanner;
         if (banner) { banner.classList.remove('banner-visible'); banner.classList.add('hidden'); }
     },
+
+    renderForecast(forecast) {
+        if (!forecast || forecast.length === 0) return '';
+        
+        let html = `<div class="forecast-title" style="font-weight:700; margin-bottom:10px; color:var(--slate-700); font-size:14px; margin-top:15px;">${i18n.get('forecast_5day')}</div>`;
+        html += '<div class="forecast-grid">';
+        
+        forecast.forEach(day => {
+            const date = new Date(day.date);
+            const dayName = date.toLocaleDateString(i18n.currentLang, { weekday: 'short' });
+            const weather = weatherLabel(day.code);
+            
+            html += `
+                <div class="forecast-item">
+                    <span class="forecast-day">${dayName}</span>
+                    <span class="forecast-icon" title="${weather.label}">${weather.icon}</span>
+                    <div class="forecast-temp">
+                        <span class="high">${Math.round(day.max)}°</span>
+                        <span class="low" style="opacity:0.6; font-size:0.9em; margin-left:3px;">${Math.round(day.min)}°</span>
+                    </div>
+                    <div class="forecast-prob" style="font-size:10px; margin-top:4px; color:var(--blue-500); font-weight:600;" title="Precipitation Probability">${day.prob}% 💧</div>
+                </div>`;
+        });
+        
+        html += '</div>';
+        return html;
+    }
 };

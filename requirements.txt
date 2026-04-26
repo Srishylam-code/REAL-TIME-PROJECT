@@ -1,0 +1,19 @@
+# AI-Powered Crop Recommendation System — Requirements
+
+## Backend (Node.js)
+The core server runs on Node.js and requires the following npm packages:
+
+- express (^4.18.2) — Web framework for API endpoints.
+- cors (^2.8.5) — Middleware for Cross-Origin Resource Sharing.
+
+## Development Tools
+- nodemon (^3.0.1) — Recommended for development (auto-restarts server on changes).
+
+## Environment Requirements
+- Node.js: >= 14.0.0
+- npm: (Included with Node.js)
+
+## Client-side (Browser)
+- Modern web browser (Chrome, Firefox, Safari, or Edge) with JavaScript enabled.
+- HTML5 and CSS3 support (for Grid, Flexbox, and Glassmorphism effects).
+- Browser Geolocation API support (for automatic location detection).
